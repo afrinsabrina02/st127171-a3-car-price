@@ -1,0 +1,57 @@
+name: CI/CD
+
+# Runs every time a commit is pushed (and on pull requests, for the test job only)
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  # ---------------------------------------------------------------- CI: run the unit tests
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install what the model and the tests need
+        run: pip install numpy matplotlib pytest
+      - name: Run unit tests
+        run: python -m pytest -v
+
+  # ---------------------------------------------------------------- CD: only runs if the tests above passed
+  deploy:
+    needs: test                                   # <- no passing tests, no deployment
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push the image of the web app (the "app" folder)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./app
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/st127171-a3:latest
+
+      - name: Deploy on the course virtual machine
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/st127171-a3:latest
+            docker rm -f st127171-a3 || true
+            docker run -d --name st127171-a3 --restart unless-stopped -p 8050:8050 ${{ secrets.DOCKER_USERNAME }}/st127171-a3:latest
+
+
+            

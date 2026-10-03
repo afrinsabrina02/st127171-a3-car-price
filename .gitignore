@@ -1,0 +1,11 @@
+__pycache__/
+.ipynb_checkpoints/
+.pytest_cache/
+mlruns/
+mlflow.db
+mlflow_local.db
+.env
+A2_car_price_prediction.ipynb
+03 - Regularization.ipynb 
+
+

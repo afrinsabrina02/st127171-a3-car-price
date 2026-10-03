@@ -68,3 +68,5 @@ python -m pytest -v         # unit tests (needs: pip install numpy matplotlib py
 `DOCKER_USERNAME`, `DOCKER_PASSWORD`, `SSH_HOST`, `SSH_PORT`, `SSH_USERNAME`, `SSH_KEY`
 
 
+## Deployment note
+The deploy job is configured but switched off (it only runs when the repository variable DEPLOY_ENABLED is set to true), because the Docker Hub login and the course VM details were not available. The test job runs on every push and passes.

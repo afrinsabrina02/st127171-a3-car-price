@@ -21,9 +21,10 @@ jobs:
         run: python -m pytest -v
 
   # ---------------------------------------------------------------- CD: only runs if the tests above passed
+  # Switched off until the deployment secrets exist: set the repository variable DEPLOY_ENABLED to true to turn it on
   deploy:
     needs: test                                   # <- no passing tests, no deployment
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
